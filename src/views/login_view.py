@@ -8,11 +8,13 @@ def login_view(page: ft.Page):
 
     user = ft.TextField(label="Username", multiline=False)
     password = ft.TextField(label="Password", password=True, can_reveal_password=True)
-    save_button = ft.ElevatedButton(text="Login", on_click=lambda e: handle_login(page), style=global_styles.button_styled())
+    save_button = ft.ElevatedButton(text="Iniciar Sesion", on_click=lambda e: handle_login(page), style=global_styles.button_styled())
+    log = ft.TextButton("No tienes cuenta?, Registrate")
 
     page.add(user)
     page.add(password)
     page.add(save_button)
+    page.add(log)
     page.update()
 
     

@@ -1,4 +1,4 @@
-# ⭐Flet app
+# Flet app
 
 A simple Flet app.
 

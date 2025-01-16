@@ -1,11 +1,12 @@
 import flet as ft
-from views.login_view import login_view
+from views.register import register
 
 
 def main(page: ft.Page):
    page.title = "Glind"
    page.vertical_alignment = ft.MainAxisAlignment.CENTER 
+   page.bgcolor = ft.Colors.WHITE
    
-   login_view(page)
+   register(page)
 
 ft.app(target=main, view=ft.AppView.WEB_BROWSER)
