@@ -6,7 +6,6 @@ def main(page: ft.Page):
    page.title = "Glind"
    page.vertical_alignment = ft.MainAxisAlignment.CENTER 
    page.bgcolor = ft.Colors.WHITE
-   
    register(page)
 
 ft.app(target=main, view=ft.AppView.WEB_BROWSER)
