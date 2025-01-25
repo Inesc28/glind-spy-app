@@ -5,7 +5,7 @@ import numpy as np
 import mss
 
 # Crear un socket de servidor
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(('0.0.0.0', 54321))
 server_socket.listen(1)
 

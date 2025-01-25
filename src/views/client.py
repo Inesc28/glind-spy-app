@@ -33,19 +33,12 @@ def client(page: ft.Page):
 
 
     def connect(e):
-        ip_server = ip_input.value.strip()  # Obtener y limpiar el valor ingresado en el TextField
 
         # Validar la dirección IP
-        if not ip_server or not validate_ip(ip_server):
-            page.snack_bar = ft.SnackBar(ft.Text("Por favor, ingrese una dirección IP válida."))
-            page.snack_bar.open = True
-            page.update()
-            return
 
-        try:
             # Iniciar conexión con el servidor
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect((ip_server, 54321))
+            client_socket.connect(('localhost', 54321))
 
             # Crear un control de imagen vacío
             img = ft.Image(width=300, height=600)
@@ -92,23 +85,11 @@ def client(page: ft.Page):
             finally:
                 client_socket.close()
 
-        except socket.gaierror as e:
-            print(f"Error al resolver la dirección: {e}")
 
-    def validate_ip(ip):
-        try:
-            socket.inet_aton(ip)
-            return True
-        except socket.error:
-            return False
-
-
-    ip_input = ft.TextField(label="Dirección IP del servidor")
     connect_button = ft.ElevatedButton(text="Conectar", on_click=connect)
     
     form_connect = ft.Column(
         controls=[
-            ip_input,
             connect_button
         ],
         alignment=ft.MainAxisAlignment.CENTER,
