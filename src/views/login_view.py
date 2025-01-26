@@ -1,6 +1,5 @@
 import flet as ft
-#from views.home_view import home_view
-from views.client import client
+from views.home_view import home_view
 from assets.styles import global_styles
 
 
@@ -15,12 +14,11 @@ def login_view(page: ft.Page):
         )
     )
     
-    
     page.vertical_alignment = page.horizontal_alignment = "center"
     
     title = ft.Text("Iniciar Sesión", style=global_styles.text_styled())
-    user = ft.TextField(label="Username", multiline=False)
-    password = ft.TextField(label="Password", password=True, can_reveal_password=True)
+    user = ft.TextField(label="Username", multiline=False, border_color="pink", border_radius=15)
+    password = ft.TextField(label="Password", password=True, can_reveal_password=True, border_color="pink", border_radius=15)
     save_button = ft.ElevatedButton(text="Iniciar Sesion", on_click=lambda e: handle_login(page), style=global_styles.button_styled())
     log = ft.TextButton("No tienes cuenta?, Registrate")
 
@@ -48,5 +46,5 @@ def login_view(page: ft.Page):
 
 def handle_login(page: ft.Page):
     page.clean()
-    client(page)
+    home_view(page)
     page.update()
