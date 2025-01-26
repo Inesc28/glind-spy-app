@@ -47,6 +47,7 @@ def register(page: ft.Page):
         on_click=register_data,
         style=global_styles.button_styled(),
     )
+    
     log = ft.TextButton(
         "Si ya tienes una cuenta, Inicia Sesion",
         on_click=lambda e: handle_register(page),

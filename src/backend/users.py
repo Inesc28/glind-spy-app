@@ -1,3 +1,4 @@
+
 # Datos de prueba para comprobar si la validacion funcionaba (ideal para pruebas)
 email_list = ["sant@gmail.com", "acness@hotmail.com", "sidness@example.com"]
 user_list = ["sant04", "acness08", "sidness26"]

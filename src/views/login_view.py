@@ -36,14 +36,6 @@ def login_view(page: ft.Page):
 
     login_main = ft.Column(
         controls=[title, user, password, save_button],
-        text="Iniciar Sesion",
-        on_click=lambda e: handle_login(page),
-        style=global_styles.button_styled(),
-    )
-    log = ft.TextButton("No tienes cuenta?, Registrate")
-
-    login_main = ft.Column(
-        controls=[title, user, password, save_button, log],
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=20,
     )
@@ -55,12 +47,7 @@ def login_view(page: ft.Page):
             handle_login(page)
         else:
             ft.AlertDialog(title=ft.Text("Ha ocurrido un error"))
-
-    def handle_login(page: ft.Page):
-        page.clean()
-        home_view(page)
-        page.update()
-
+            
 
 def handle_login(page: ft.Page):
     page.clean()
