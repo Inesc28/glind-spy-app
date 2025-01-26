@@ -13,6 +13,10 @@ def register(page: ft.Page):
         src="src/assets/img/Logo.png", fit=ft.ImageFit.COVER, width=100, height=150
     )
 
+    logo = ft.Image(
+        src="src/assets/img/Logo.png", fit=ft.ImageFit.COVER, width=100, height=150
+    )
+
     page.window.always_on_top = True
     page.decoration = ft.BoxDecoration(
         image=ft.DecorationImage(

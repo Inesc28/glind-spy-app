@@ -1,9 +1,10 @@
 import socket
 import pickle
+import base64
+import io
 import flet as ft
 from PIL import Image
-import io
-import base64
+
 
 
 def client(page: ft.Page):

