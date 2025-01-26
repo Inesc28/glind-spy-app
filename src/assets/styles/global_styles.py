@@ -1,5 +1,6 @@
 import flet as ft
 
+
 def button_styled():
     return ft.ButtonStyle(
         color=ft.Colors.WHITE,
@@ -7,8 +8,6 @@ def button_styled():
         shape=ft.RoundedRectangleBorder(radius=10),
     )
 
+
 def text_styled():
-    return ft.TextStyle(
-        color=ft.Colors.WHITE,
-        size=20
-    )
+    return ft.TextStyle(color=ft.Colors.WHITE, size=20)
