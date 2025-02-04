@@ -29,10 +29,10 @@ def generate_user_id(pais="VE"):
     return f"{pais}{nums}{ch}"
 
 def register_new_user(email, user, password):
-    asigned_id = generate_user_id()
-    if asigned_id in users:
+    asignedId = generate_user_id()
+    if asignedId in users:
         register_new_user(email, user, password)
-    users[asigned_id] = {"email": email, "user": user, "password": password}
+    users[asignedId] = {"email": email, "user": user, "password": password}
     print(users)
 
 def validate_user(user, password):
@@ -50,14 +50,14 @@ def validate_user(user, password):
         print("El usuario ingresado no existe.")
         return False
 
-def generate_qr(user_id):
+def generate_qr(userId):
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
         border=4,
     )
-    qr.add_data(user_id)
+    qr.add_data(userId)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    img.save(f"{user_id}.png")
+    img.save(f"{userId}.png")
