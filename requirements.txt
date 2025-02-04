@@ -1,6 +1,4 @@
 mss
-flet
-Pillow
+pillow
 numpy
-pyzbar
-qrcode
+flet
