@@ -1,6 +1,5 @@
 import string
 import random
-import qrcode
 
 users = {
     "VE0001ABC": {
@@ -23,12 +22,10 @@ users = {
     },
 }
 
-
 def generate_user_id(pais="VE"):
     nums = "".join((random.choices(string.ascii_uppercase, k=4)))
     ch = "".join((random.choices(string.digits, k=4)))
     return f"{pais}{nums}{ch}"
-
 
 def register_new_user(email, user, password):
     asignedId = generate_user_id()
@@ -36,7 +33,6 @@ def register_new_user(email, user, password):
         register_new_user(email, user, password)
     users[asignedId] = {"email": email, "user": user, "password": password}
     print(users)
-
 
 def validate_user(user, password):
     for userId, user_data in users.items():
@@ -50,20 +46,5 @@ def validate_user(user, password):
     print("El usuario ingresado no existe.")
     return None
 
-
-def generate_qr(userId):
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(userId)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    img.save(f"{userId}.png")
-
-
 def get_user_data(user_id):
     return {"id": user_id, "user": users[user_id]["user"]} if user_id in users else None
-
