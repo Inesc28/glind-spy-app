@@ -1,13 +1,13 @@
 import flet as ft
 from views.login_view import login_view
 from assets.styles import global_styles
-from backend.users import save_data
+from backend.users import register_new_user
 
 
 def register(page: ft.Page):
 
     def register_data(e):
-        save_data(email.value, user.value, password.value)
+        register_new_user(email.value, user.value, password.value)
 
 
     logo = ft.Image(

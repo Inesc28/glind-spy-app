@@ -21,6 +21,7 @@ def login_view(page: ft.Page):
     user = ft.TextField(
         label="Username", multiline=False, border_color="pink", border_radius=15
     )
+
     password = ft.TextField(
         label="Password",
         password=True,
@@ -28,6 +29,7 @@ def login_view(page: ft.Page):
         border_color="pink",
         border_radius=15,
     )
+
     save_button = ft.ElevatedButton(
         text="Iniciar Sesión",
         on_click=lambda e: credentials_access(e),
@@ -47,10 +49,9 @@ def login_view(page: ft.Page):
             handle_login(page)
         else:
             ft.AlertDialog(title=ft.Text("Ha ocurrido un error"))
-            
+
 
 def handle_login(page: ft.Page):
     page.clean()
     home_view(page)
     page.update()
-

@@ -1,42 +1,76 @@
-import random
 import string
+import random
+import qrcode
 
-# Datos de prueba para comprobar si la validacion funcionaba (ideal para pruebas)
-email_list = ["sant@gmail.com", "acness@hotmail.com", "sidness@example.com"]
-user_list = ["sant04", "acness08", "sidness26"]
-user_id_list = ["VE0001ABC", "VE0002DEF", "VE0003GHI"]
-password_list = ["12345", "67890", "98765"]
+users = {
+    "VE0001ABC": {
+        "email": "sant@gmail.com",
+        "user": "sant04",
+        "password": "12345",
+        "devices": ["VE0002DEF"],
+    },
+    "VE0002DEF": {
+        "email": "acness@hotmail.com",
+        "user": "acness08",
+        "password": "67890",
+        "devices": ["VE0001ABC", "VE0003GHI"],
+    },
+    "VE0003GHI": {
+        "email": "sidness@example.com",
+        "user": "sidness26",
+        "password": "98765",
+        "devices": ["VE0001ABC"],
+    },
+}
 
-# Funcion que genera el id de usuario
 def generate_user_id(pais="VE"):
-    nums = ''.join((random.choices(string.ascii_uppercase, k=4)))
-    ch = ''.join((random.choices(string.digits, k=4)))
+    nums = "".join((random.choices(string.ascii_uppercase, k=4)))
+    ch = "".join((random.choices(string.digits, k=4)))
     return f"{pais}{nums}{ch}"
 
-
-# Funcion que guarda los datos en las listas, es llamada en el register
-def save_data(email, user, password):
-
-    email_list.append(email)
-    user_list.append(user)
-    password_list.append(password)
-    user_id_list.append(generate_user_id())
-    print(email_list)
-    print(user_list)
-    print(password_list)
-    print("Usuario registrado con exito!")
+def register_new_user(email, user, password):
+    asigned_id = generate_user_id()
+    if asigned_id in users:
+        register_new_user(email, user, password)
+    users[asigned_id] = {"email": email, "user": user, "password": password}
+    print(users)
 
 
-# Funcion que valida los datos, es llamada en el login
 def validate_user(user, password):
-    if user in user_list:
-        index = user_list.index(user)
-        if password == password_list[index]:
-            print("Inicio de sesión exitoso")
-            return True
-        else:
-            print("La contraseña es incorrecta.")
-            return False
-    else:
-        print("El usuario no existe.")
+    userExists = False
+    for userId in users.keys():
+        if user == users[userId]["user"]:
+            userExists = True  # El usuario existe en el sistema
+            if password == users[userId]["password"]:
+                print("Inicio de sesión exitoso")
+                return True
+            else:
+                print("La contraseña es incorrecta.")
+                return False
+    if not userExists:
+        print("El usuario ingresado no existe.")
         return False
+
+    # if user_code in users:
+    #    if password == users[user_code]["password"] and user == users[user_code]["user"]:
+    #        print("Inicio de sesión exitoso")
+    #        return True
+    #    else:
+    #        print("La contraseña es incorrecta.")
+    #        return False
+    # else:
+    #    print("El usuario no existe.")
+    #    return False
+
+
+def generate_qr(user_id):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(user_id)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(f"{user_id}.png")
