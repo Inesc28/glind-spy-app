@@ -1,9 +1,17 @@
 import flet as ft
 from assets.styles import global_styles
+from backend.users import get_user_data
 
 
-def home_view(page: ft.Page):
-    
+def home_view(page: ft.Page, logged_in_user_id: str):
+    user_info = get_user_data(logged_in_user_id)
+
+    if user_info:
+        user_code = ft.Text(value=f"{user_info['id']}")
+        user_name = ft.Text(
+            value=f"{user_info['user']}", style=global_styles.global_text()
+        )
+
     logo = ft.Image(
         src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/3044f73c-0547-4b01-aeec-7ebff6555e1b/dj1p9o7-af65f7df-e4ef-497f-9cb7-b4545d76045e.png/v1/fill/w_400,h_400/logo_glind_by_coloringdancingedits_dj1p9o7-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NDAwIiwicGF0aCI6IlwvZlwvMzA0NGY3M2MtMDU0Ny00YjAxLWFlZWMtN2ViZmY2NTU1ZTFiXC9kajFwOW83LWFmNjVmN2RmLWU0ZWYtNDk3Zi05Y2I3LWI0NTQ1ZDc2MDQ1ZS5wbmciLCJ3aWR0aCI6Ijw9NDAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.e7HioozPY8w7uJYU9ucOlj32A2t67eokOm5vkh3go-A",
         fit=ft.ImageFit.COVER,
@@ -13,12 +21,12 @@ def home_view(page: ft.Page):
 
     appbar = ft.AppBar(
         leading=ft.Container(content=logo),
-        title=ft.Text("Glind"),
+        title=ft.Text("Glind", style=global_styles.global_text()),
         bgcolor=ft.Colors.BLACK12,
         actions=[
             ft.IconButton(
                 ft.Icons.SETTINGS, on_click=lambda _: print("Abrir configuraciones...")
-            ),
+            )
         ],
     )
 
@@ -40,16 +48,9 @@ def home_view(page: ft.Page):
         ),
     )
 
-    server_button = ft.ElevatedButton(
-        text="Servidor", style=global_styles.button_styled()
-    )
-    client_button = ft.ElevatedButton(
-        text="Cliente", style=global_styles.button_styled()
-    )
-
-    form_connect = ft.Row(
-        controls=[server_button, client_button],
-        alignment=ft.MainAxisAlignment.CENTER,
+    form_connect = ft.Column(
+        controls=[user_name, user_code],
+        alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20,
     )
 

@@ -11,3 +11,6 @@ def button_styled():
 
 def text_styled():
     return ft.TextStyle(color=ft.Colors.WHITE, size=20)
+
+def global_text():
+    return ft.TextStyle(color=ft.Colors.WHITE, size=20, font_family='Verdana')

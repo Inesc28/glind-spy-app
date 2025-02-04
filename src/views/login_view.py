@@ -17,7 +17,7 @@ def login_view(page: ft.Page):
 
     page.vertical_alignment = page.horizontal_alignment = "center"
 
-    title = ft.Text("Iniciar Sesión", style=global_styles.text_styled())
+    title = ft.Text("Iniciar Sesión", style=global_styles.global_text())
     user = ft.TextField(
         label="Username", multiline=False, border_color="pink", border_radius=15
     )
@@ -39,6 +39,7 @@ def login_view(page: ft.Page):
     login_main = ft.Column(
         controls=[title, user, password, save_button],
         alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20,
     )
 
@@ -50,7 +51,10 @@ def login_view(page: ft.Page):
         else:
             ft.AlertDialog(title=ft.Text("Ha ocurrido un error"))
 
-def handle_login(page: ft.Page):
-    page.clean()
-    home_view(page)
-    page.update()
+
+    def handle_login(page: ft.Page):
+        user_id = validate_user(user.value, password.value)
+    
+        page.clean()
+        home_view(page, user_id)  
+        page.update()

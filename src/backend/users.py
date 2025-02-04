@@ -23,10 +23,12 @@ users = {
     },
 }
 
+
 def generate_user_id(pais="VE"):
     nums = "".join((random.choices(string.ascii_uppercase, k=4)))
     ch = "".join((random.choices(string.digits, k=4)))
     return f"{pais}{nums}{ch}"
+
 
 def register_new_user(email, user, password):
     asignedId = generate_user_id()
@@ -35,20 +37,19 @@ def register_new_user(email, user, password):
     users[asignedId] = {"email": email, "user": user, "password": password}
     print(users)
 
+
 def validate_user(user, password):
-    userExists = False
-    for userId in users.keys():
-        if user == users[userId]["user"]:
-            userExists = True  # El usuario existe en el sistema
-            if password == users[userId]["password"]:
+    for userId, user_data in users.items():
+        if user == user_data["user"]:
+            if password == user_data["password"]:
                 print("Inicio de sesión exitoso")
-                return True
+                return userId  # Devuelves el ID del usuario
             else:
                 print("La contraseña es incorrecta.")
-                return False
-    if not userExists:
-        print("El usuario ingresado no existe.")
-        return False
+                return None
+    print("El usuario ingresado no existe.")
+    return None
+
 
 def generate_qr(userId):
     qr = qrcode.QRCode(
@@ -61,3 +62,7 @@ def generate_qr(userId):
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     img.save(f"{userId}.png")
+
+
+def get_user_data(user_id):
+    return {"id": user_id, "user": users[user_id]["user"]} if user_id in users else None
