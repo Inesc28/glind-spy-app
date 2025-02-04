@@ -66,3 +66,4 @@ def generate_qr(userId):
 
 def get_user_data(user_id):
     return {"id": user_id, "user": users[user_id]["user"]} if user_id in users else None
+
