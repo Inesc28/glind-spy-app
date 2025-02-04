@@ -35,7 +35,6 @@ def register_new_user(email, user, password):
     users[asigned_id] = {"email": email, "user": user, "password": password}
     print(users)
 
-
 def validate_user(user, password):
     userExists = False
     for userId in users.keys():
@@ -50,18 +49,6 @@ def validate_user(user, password):
     if not userExists:
         print("El usuario ingresado no existe.")
         return False
-
-    # if user_code in users:
-    #    if password == users[user_code]["password"] and user == users[user_code]["user"]:
-    #        print("Inicio de sesión exitoso")
-    #        return True
-    #    else:
-    #        print("La contraseña es incorrecta.")
-    #        return False
-    # else:
-    #    print("El usuario no existe.")
-    #    return False
-
 
 def generate_qr(user_id):
     qr = qrcode.QRCode(

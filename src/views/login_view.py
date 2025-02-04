@@ -50,7 +50,6 @@ def login_view(page: ft.Page):
         else:
             ft.AlertDialog(title=ft.Text("Ha ocurrido un error"))
 
-
 def handle_login(page: ft.Page):
     page.clean()
     home_view(page)
