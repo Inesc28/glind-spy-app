@@ -7,19 +7,19 @@ users = {
         "email": "sant@gmail.com",
         "user": "sant04",
         "password": "12345",
-        "devices": ["VE0002DEF"],
+        "linked_devices": ["VE0002DEF"],
     },
     "VE0002DEF": {
         "email": "acness@hotmail.com",
         "user": "acness08",
         "password": "67890",
-        "devices": ["VE0001ABC", "VE0003GHI"],
+        "linked_devices": ["VE0001ABC", "VE0003GHI"],
     },
     "VE0003GHI": {
         "email": "sidness@example.com",
         "user": "sidness26",
         "password": "98765",
-        "devices": ["VE0001ABC"],
+        "linked_devices": ["VE0001ABC"],
     },
 }
 
