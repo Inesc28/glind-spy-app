@@ -1,6 +1,9 @@
 import string
+import socket
 import random
 import qrcode
+import json
+from io import BytesIO
 
 users = {
     "VE0001ABC": {
@@ -51,19 +54,32 @@ def validate_user(user, password):
     return None
 
 
-def generate_qr(userId):
+# Función para generar el código QR con información de conexión y devolver la imagen en memoria
+def generate_qr(user_id):
+    ip_address = socket.gethostbyname(socket.gethostname())
+    port = 5051  # Puerto que usarás para la conexión
+    connection_data = {"userId": user_id, "ip": ip_address, "port": port}
+    data_string = json.dumps(connection_data)
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
         border=4,
     )
-    qr.add_data(userId)
+    qr.add_data(data_string)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    img.save(f"{userId}.png")
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return buffered.getvalue()  # Devuelve la imagen en memoria
+
+# Función para actualizar la lista de dispositivos vinculados
+def link_device(user_id, linked_user_id):
+    if user_id in users:
+        if "linked_devices" not in users[user_id]:
+            users[user_id]["linked_devices"] = []
+        users[user_id]["linked_devices"].append(linked_user_id)
 
 
 def get_user_data(user_id):
     return {"id": user_id, "user": users[user_id]["user"]} if user_id in users else None
-
