@@ -32,7 +32,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         actions=[
             ft.IconButton(
                 icon=ft.Icons.SETTINGS,  # Usamos ft.Icons en lugar de ft.icons
-                on_click=lambda _: print("Abrir configuraciones..."),
+                on_click=lambda _: print("Abrir configuraciones...")
             )
         ],
     )
@@ -47,6 +47,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_AROUND,
             controls=[
+                ft.IconButton(icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"),  # Usamos ft.Icons en lugar de ft.icons
                 ft.IconButton(
                     icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"
                 ),  
@@ -70,23 +71,38 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         try:
             print("Botón 'Generar y Mostrar QR' presionado")
 
+            # Eliminar cualquier QR preexistente
+            if hasattr(page, 'qr_container'):
+                form_connect.controls.remove(page.qr_container)
+
             # Generar QR y verificar si devuelve datos
             qr_image_data = generate_qr(logged_in_user_id)
             if qr_image_data:
-                print("Datos del QR generados:", qr_image_data)
+                print("Datos del QR generados.")
 
                 # Verificar si base64 encoding está funcionando correctamente
-                qr_base64 = base64.b64encode(qr_image_data).decode("utf-8")
-                print("Datos del QR en base64:", qr_base64)
+                qr_base64 = base64.b64encode(qr_image_data).decode('utf-8')
+                print("Datos del QR en base64 generados.")
 
-                # Verificar la configuración de la imagen
+                # Creación de la imagen QR
                 qr_image = ft.Image(src_base64=qr_base64, width=200, height=200)
-                print("Imagen QR configurada.")
 
-                # Añadir la imagen a la página y actualizar
-                form_connect.controls.append(qr_image)
+                # Crear un contenedor con animación de opacidad
+                page.qr_container = ft.Container(
+                    content=qr_image,
+                    opacity=0.0,
+                    animate_opacity=500  # duración de la animación en milisegundos
+                )
+
+                # Agregar el contenedor al formulario
+                form_connect.controls.append(page.qr_container)
                 page.update()
-                print("Imagen QR añadida y página actualizada.")
+
+                # Iniciar la animación cambiando la opacidad
+                page.qr_container.opacity = 1.0
+                page.update()
+
+                print("Imagen QR añadida y animación de opacidad iniciada.")
             else:
                 print("No se pudo generar el código QR")
         except Exception as ex:
@@ -94,7 +110,8 @@ def home_view(page: ft.Page, logged_in_user_id: str):
 
 
     generate_qr_button = ft.ElevatedButton(
-        text="Generar y Mostrar QR", on_click=generate_and_show_qr
+        text="Generar y Mostrar QR",
+        on_click=generate_and_show_qr
     )
 
     link_device_button = ft.ElevatedButton(
@@ -105,7 +122,14 @@ def home_view(page: ft.Page, logged_in_user_id: str):
     form_connect.controls.append(link_device_button)
 
     page.add(appbar)
-    page.add(ft.Container(content=form_connect, padding=0, margin=0, expand=False))
+    page.add(
+        ft.Container(
+            content=form_connect,
+            padding=0,
+            margin=0,
+            expand=False
+        )
+    )
     page.add(
         ft.Stack(
             controls=[nav],
