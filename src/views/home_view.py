@@ -2,8 +2,7 @@ import flet as ft
 import base64
 from backend.users import generate_qr, get_user_data
 from assets.styles import global_styles
-from views.link_device_view import link_device_view
-
+from views.vinc_list import vinc_list
 
 def home_view(page: ft.Page, logged_in_user_id: str):
     user_info = get_user_data(logged_in_user_id)
@@ -35,7 +34,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
 
     nav = ft.Container(
         shape=ft.BoxShape.CIRCLE,
-        bgcolor=ft.Colors.BLACK,  # Usamos ft.Colors en lugar de ft.colors
+        bgcolor=ft.Colors.BLACK,  
         alignment=ft.alignment.center,
         padding=0,
         height=50,
@@ -45,11 +44,12 @@ def home_view(page: ft.Page, logged_in_user_id: str):
             controls=[
                 ft.IconButton(
                     icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"
-                ),  # Usamos ft.Icons en lugar de ft.icons
+                ),  
                 ft.IconButton(
                     icon=ft.Icons.LIST_ALT_ROUNDED,
                     data="2",
-                    icon_color="white",  # Usamos ft.Icons en lugar de ft.icons
+                    icon_color="white", 
+                    on_click=vinc_list,
                 ),
             ],
         ),
@@ -87,21 +87,13 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         except Exception as ex:
             print(f"Error en generate_and_show_qr: {ex}")
 
-    def open_link_device_view(e):
-        try:
-            print("Botón 'Escanear QR y Conectar' presionado")
-            page.views.clear()
-            link_device_view(page, logged_in_user_id, "monitor")
-            page.update()
-        except Exception as ex:
-            print(f"Error en open_link_device_view: {ex}")
 
     generate_qr_button = ft.ElevatedButton(
         text="Generar y Mostrar QR", on_click=generate_and_show_qr
     )
 
     link_device_button = ft.ElevatedButton(
-        text="Escanear QR y Conectar", on_click=open_link_device_view
+        text="Escanear QR y Conectar"
     )
 
     form_connect.controls.append(generate_qr_button)

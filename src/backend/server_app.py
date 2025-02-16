@@ -36,9 +36,9 @@ def handle_client(conn, addr):
 # Función para iniciar el servidor socket
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     ip_address = socket.gethostbyname(socket.gethostname())
-    port = 5051  # Debe coincidir con el puerto usado en el QR
+    port = 5051
     server_socket.bind((ip_address, port))
     server_socket.listen(5)
     print(f"Servidor iniciado en {ip_address}:{port}")

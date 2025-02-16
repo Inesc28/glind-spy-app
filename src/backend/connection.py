@@ -2,9 +2,7 @@ import socket
 import threading
 import json
 from backend.users import link_device
-
-# Diccionario global para almacenar conexiones
-connections = {}
+from backend.server_app import connections
 
 # Función para manejar la conexión de cada cliente
 def handle_client(conn, addr):
@@ -30,21 +28,6 @@ def handle_client(conn, addr):
                     conn.send(f"Dispositivo {linkedUserId} vinculado.".encode())
                     break
     conn.close()
-
-
-# Función para iniciar el servidor socket
-def start_server():
-    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ipAddress = socket.gethostbyname(socket.gethostname())
-    port = 5050  # Debe coincidir con el puerto usado en el QR
-    serverSocket.bind((ipAddress, port))
-    serverSocket.listen(5)
-    print(f"Servidor iniciado en {ipAddress}:{port}")
-
-    while True:
-        conn, addr = serverSocket.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
 
 
 # Función para conectar al servidor central después de escanear el código QR
