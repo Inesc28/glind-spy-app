@@ -1,42 +1,28 @@
 import flet as ft
+from backend.users import users
 
-def vinc_list(page):
-    page.title = "ListTile"
-    list = ft.Card(
-            content=ft.Container(
-                width=500,
-                content=ft.Column(
-                    [
-                        ft.ListTile(
-                            title=ft.Text("Dispositivos Vinculados"),
-                        ),
-                        ft.ListTile(
-                            leading=ft.Icon(ft.Icons.ALBUM),
-                            title=ft.Text("One-line with leading and trailing controls"),
-                            trailing=ft.PopupMenuButton(
-                                icon=ft.Icons.MORE_VERT,
-                                items=[
-                                    ft.PopupMenuItem(text="Item 1"),
-                                    ft.PopupMenuItem(text="Item 2"),
-                                ],
-                            ),
-                        ),
-                        ft.ListTile(
-                            leading=ft.Icon(ft.Icons.SNOOZE),
-                            title=ft.Text("Two-line with leading and trailing controls"),
-                            subtitle=ft.Text("Here is a second title."),
-                            trailing=ft.PopupMenuButton(
-                                icon=ft.Icons.MORE_VERT,
-                                items=[
-                                    ft.PopupMenuItem(text="Item 1"),
-                                    ft.PopupMenuItem(text="Item 2"),
-                                ],
-                            ),
-                        ),
-                    ],
-                    spacing=0,
-                ),
-                padding=ft.padding.symmetric(vertical=10),
-            )
+def vinc_list(page: ft.Page, user_id, users):
+    user_data = users[user_id]
+    page.title = f"Dispositivos vinculados de {user_data['user']}"
+    linked_devices = user_data.get('linked_devices', [])
+    items = [ft.ListTile(title=ft.Text(f"Dispositivo: {ld}")) for ld in linked_devices]
+    card = ft.Card(
+        content=ft.Container(
+            width=500,
+            content=ft.Column(
+                [ft.ListTile(title=ft.Text("Dispositivos Vinculados"))] + items,
+                spacing=10,
+            ),
+            padding=ft.padding.symmetric(vertical=10),
         )
-    page.add(list)
+    )
+    page.clean()
+    page.add(card)
+    page.update()
+
+
+
+    
+
+
+

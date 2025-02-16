@@ -1,10 +1,15 @@
 import flet as ft
 import base64
-from backend.users import generate_qr, get_user_data
+from backend.users import generate_qr, get_user_data, users
 from assets.styles import global_styles
 from views.vinc_list import vinc_list
 
 def home_view(page: ft.Page, logged_in_user_id: str):
+    
+    def list_in(e):
+        vinc_list(page, logged_in_user_id, users)  
+        page.update()
+    
     user_info = get_user_data(logged_in_user_id)
 
     if user_info:
@@ -49,7 +54,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                     icon=ft.Icons.LIST_ALT_ROUNDED,
                     data="2",
                     icon_color="white", 
-                    on_click=vinc_list,
+                    on_click=list_in,
                 ),
             ],
         ),
