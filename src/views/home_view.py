@@ -24,10 +24,10 @@ def home_view(page: ft.Page, logged_in_user_id: str):
     appbar = ft.AppBar(
         leading=ft.Container(content=logo),
         title=ft.Text("Glind", style=global_styles.global_text()),
-        bgcolor=ft.colors.BLACK12,
+        bgcolor=ft.Colors.BLACK12,  # Usamos ft.Colors en lugar de ft.colors
         actions=[
             ft.IconButton(
-                icon=ft.icons.SETTINGS,
+                icon=ft.Icons.SETTINGS,  # Usamos ft.Icons en lugar de ft.icons
                 on_click=lambda _: print("Abrir configuraciones..."),
             )
         ],
@@ -35,7 +35,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
 
     nav = ft.Container(
         shape=ft.BoxShape.CIRCLE,
-        bgcolor=ft.colors.BLACK,
+        bgcolor=ft.Colors.BLACK,  # Usamos ft.Colors en lugar de ft.colors
         alignment=ft.alignment.center,
         padding=0,
         height=50,
@@ -43,15 +43,18 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_AROUND,
             controls=[
-                ft.IconButton(icon=ft.icons.HOME_FILLED, data="1", icon_color="white"),
                 ft.IconButton(
-                    icon=ft.icons.LIST_ALT_ROUNDED, data="2", icon_color="white"
+                    icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"
+                ),  # Usamos ft.Icons en lugar de ft.icons
+                ft.IconButton(
+                    icon=ft.Icons.LIST_ALT_ROUNDED,
+                    data="2",
+                    icon_color="white",  # Usamos ft.Icons en lugar de ft.icons
                 ),
             ],
         ),
     )
 
-    
     form_connect = ft.Column(
         controls=[user_name, user_code],
         alignment=ft.CrossAxisAlignment.CENTER,
@@ -61,12 +64,24 @@ def home_view(page: ft.Page, logged_in_user_id: str):
     def generate_and_show_qr(e):
         try:
             print("Botón 'Generar y Mostrar QR' presionado")
+
+            # Generar QR y verificar si devuelve datos
             qr_image_data = generate_qr(logged_in_user_id)
             if qr_image_data:
+                print("Datos del QR generados:", qr_image_data)
+
+                # Verificar si base64 encoding está funcionando correctamente
                 qr_base64 = base64.b64encode(qr_image_data).decode("utf-8")
+                print("Datos del QR en base64:", qr_base64)
+
+                # Verificar la configuración de la imagen
                 qr_image = ft.Image(src_base64=qr_base64, width=200, height=200)
-                page.add(qr_image)
+                print("Imagen QR configurada.")
+
+                # Añadir la imagen a la página y actualizar
+                form_connect.controls.append(qr_image)
                 page.update()
+                print("Imagen QR añadida y página actualizada.")
             else:
                 print("No se pudo generar el código QR")
         except Exception as ex:

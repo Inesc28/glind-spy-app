@@ -56,22 +56,34 @@ def validate_user(user, password):
 
 # Función para generar el código QR con información de conexión y devolver la imagen en memoria
 def generate_qr(user_id):
-    ip_address = socket.gethostbyname(socket.gethostname())
-    port = 5051  # Puerto que usarás para la conexión
-    connection_data = {"userId": user_id, "ip": ip_address, "port": port}
-    data_string = json.dumps(connection_data)
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(data_string)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    return buffered.getvalue()  # Devuelve la imagen en memoria
+    try:
+        ip_address = socket.gethostbyname(socket.gethostname())
+        port = 5051  # Puerto que usarás para la conexión
+        connection_data = {"userId": user_id, "ip": ip_address, "port": port}
+        data_string = json.dumps(connection_data)
+        print("Datos de conexión:", connection_data)  # Verificar los datos de conexión
+
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(data_string)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        qr_data = buffered.getvalue()
+        print("QR generado:", qr_data)  # Verificar los datos del QR generado
+
+        buffered.close()
+        return qr_data  # Devuelve la imagen en memoria
+    except Exception as ex:
+        print(f"Error en generate_qr: {ex}")
+        return None
+
 
 # Función para actualizar la lista de dispositivos vinculados
 def link_device(user_id, linked_user_id):
