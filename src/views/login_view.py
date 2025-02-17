@@ -54,7 +54,6 @@ def login_view(page: ft.Page):
 
     def handle_login(page: ft.Page):
         user_id = validate_user(user.value, password.value)
-    
         page.clean()
         home_view(page, user_id)  
         page.update()
