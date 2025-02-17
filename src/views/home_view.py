@@ -1,8 +1,9 @@
 import flet as ft
 import cv2
 import base64
+import json
 from pyzbar.pyzbar import decode
-from backend.users import generate_qr, get_user_data, users
+from backend.users import generate_qr, get_user_data,link_device, users
 from backend.client import scan_qr_code, connect_to_server
 from assets.styles import global_styles
 from views.vinc_list import vinc_list
@@ -111,10 +112,10 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         except Exception as ex:
             print(f"Error en generate_and_show_qr: {ex}")
 
-
     def scan_and_connect(e):
         try:
             print("Botón 'Escanear QR y Conectar' presionado")
+            qr_data = None
 
             # Crear una imagen en la interfaz de Flet para mostrar el video
             video_image = ft.Image()
@@ -124,7 +125,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
             cap = cv2.VideoCapture(0)
             if not cap.isOpened():
                 print("No se pudo abrir la cámara")
-                ft.dialog_alert("No se pudo abrir la cámara")
+                ft.AlertDialog("No se pudo abrir la cámara")
                 return
 
             while True:
@@ -132,26 +133,49 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                 if not ret:
                     print("No se pudo recibir el fotograma")
                     break
+
                 # Convertir el fotograma a formato compatible con Flet
-                _, buffer = cv2.imencode(".jpg", frame)
+                _, buffer = cv2.imencode('.jpg', frame)
                 img_bytes = buffer.tobytes()
-                video_image.src_base64 = base64.b64encode(img_bytes).decode("utf-8")
+                video_image.src_base64 = base64.b64encode(img_bytes).decode('utf-8')
                 page.update()
 
                 # Intentar decodificar códigos QR
                 decoded_objs = decode(frame)
                 if decoded_objs:
-                    qr_data = decoded_objs[0].data.decode("utf-8")
+                    qr_data = decoded_objs[0].data.decode('utf-8')
                     print("QR detectado:", qr_data)
-                    cap.release()
-                    video_image.src_base64 = None
-                    page.overlay.remove(video_image)
-                    page.update()
-                    connect_to_server(qr_data, logged_in_user_id, "monitor")
-                    ft.dialog_alert("Dispositivo vinculado exitosamente")
                     break
+
+            # Liberar recursos y limpiar la interfaz
+            cap.release()
+            video_image.src_base64 = None
+            page.overlay.remove(video_image)
+            page.update()
+
+            if qr_data:
+                # Intentar cargar los datos del QR como un diccionario JSON
+                try:
+                    connection_data = json.loads(qr_data)
+                    # Verificar si el diccionario tiene las claves esperadas
+                    required_keys = {"userId", "ip", "port"}
+                    if required_keys.issubset(connection_data.keys()):
+                        target_user_id = connection_data["userId"]
+                        # Agregar el userId del dispositivo escaneado a la lista de dispositivos vinculados
+                        link_device(logged_in_user_id, target_user_id)
+                        print(f"Dispositivos vinculados: {logged_in_user_id} <--> {target_user_id}")
+                        ft.AlertDialog("Dispositivo vinculado exitosamente")
+                    else:
+                        print("El QR no contiene los datos necesarios.")
+                        ft.AlertDialog("El código QR escaneado no es válido para este escaneo.")
+                except json.JSONDecodeError:
+                    print("El QR no es un JSON válido.")
+                    ft.AlertDialog("El código QR escaneado no es válido para este escaneo.")
+            else:
+                ft.AlertDialog("No se pudo escanear el código QR")
         except Exception as ex:
             print(f"Error en scan_and_connect: {ex}")
+
 
     generate_qr_button = ft.ElevatedButton(
         text="Generar y Mostrar QR",
