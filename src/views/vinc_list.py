@@ -22,7 +22,3 @@ def vinc_list(page: ft.Page, user_id, users):
 
 
 
-    
-
-
-
