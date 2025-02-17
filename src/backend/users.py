@@ -90,7 +90,14 @@ def link_device(user_id, linked_user_id):
     if user_id in users:
         if "linked_devices" not in users[user_id]:
             users[user_id]["linked_devices"] = []
-        users[user_id]["linked_devices"].append(linked_user_id)
+        if linked_user_id not in users[user_id]["linked_devices"]:
+            users[user_id]["linked_devices"].append(linked_user_id)
+        else:
+            print(
+                f"El dispositivo {linked_user_id} ya está vinculado con el usuario {user_id}."
+            )
+    else:
+        print(f"Usuario {user_id} no encontrado.")
 
 
 def get_user_data(user_id):
