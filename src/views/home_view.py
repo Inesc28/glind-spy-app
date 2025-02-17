@@ -4,7 +4,6 @@ import base64
 import json
 from pyzbar.pyzbar import decode
 from backend.users import generate_qr, get_user_data,link_device, users
-from backend.client import scan_qr_code, connect_to_server
 from assets.styles import global_styles
 from views.vinc_list import vinc_list
 

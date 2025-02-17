@@ -3,3 +3,5 @@ pillow
 numpy
 flet
 pyzbar
+opencv-python
+qrcode
