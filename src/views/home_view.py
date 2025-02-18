@@ -2,15 +2,95 @@ import flet as ft
 import cv2
 import base64
 import json
-from pyzbar.pyzbar import decode
-from backend.users import generate_qr, get_user_data,link_device, users
+import socket
+import threading
 from assets.styles import global_styles
+from pyzbar.pyzbar import decode
 from views.vinc_list import vinc_list
+from backend.users import generate_qr, get_user_data, link_device, users
 
 def home_view(page: ft.Page, logged_in_user_id: str):
 
+    # Conectar al servidor al iniciar la vista
+    def connect_to_server():
+        try:
+            server_ip = '127.0.0.1'  # Reemplaza con la IP del servidor si es necesario
+            server_port = 5051  # Puerto del servidor
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.connect((server_ip, server_port))
+            print(f"Conectado al servidor en {server_ip}:{server_port}")
+
+            # Enviar el user_id al servidor
+            user_data = {
+                "userId": logged_in_user_id,
+                "deviceType": "monitored"  # Tipo de dispositivo: monitoreado
+            }
+            client_socket.send(json.dumps(user_data).encode())
+
+            # Crear un hilo para manejar mensajes entrantes
+            threading.Thread(target=handle_server_messages, args=(client_socket,)).start()
+
+        except Exception as ex:
+            print(f"Error al conectar al servidor: {ex}")
+
+    # Función para manejar mensajes entrantes del servidor
+    def handle_server_messages(client_socket):
+        try:
+            while True:
+                data = client_socket.recv(1024).decode()
+                if not data:
+                    break
+                message = json.loads(data)
+                if message.get("action") == "monitor_request":
+                    requester_id = message.get("requesterId")
+                    # Mostrar diálogo para aceptar o denegar el monitoreo
+                    show_monitor_request_dialog(requester_id, client_socket)
+        except Exception as ex:
+            print(f"Error en handle_server_messages: {ex}")
+        finally:
+            client_socket.close()
+
+    # Función para mostrar el diálogo de solicitud de monitoreo
+    def show_monitor_request_dialog(requester_id, client_socket):
+        def accept_monitoring(e):
+            response = {"action": "monitor_response", "accepted": True, "userId": logged_in_user_id}
+            client_socket.send(json.dumps(response).encode())
+            page.dialog.open = False
+            page.update()
+
+        def deny_monitoring(e):
+            response = {"action": "monitor_response", "accepted": False, "userId": logged_in_user_id}
+            client_socket.send(json.dumps(response).encode())
+            page.dialog.open = False
+            page.update()
+
+        content = ft.Column(
+            [
+                ft.Text(f"El usuario {requester_id} quiere monitorear su dispositivo."),
+                ft.Row(
+                    [
+                        ft.ElevatedButton("Aceptar", on_click=accept_monitoring),
+                        ft.ElevatedButton("Denegar", on_click=deny_monitoring),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+            ],
+            spacing=20,
+        )
+        page.dialog = ft.AlertDialog(
+            title=ft.Text("Solicitud de Monitoreo"),
+            content=content,
+            modal=True,
+            on_dismiss=lambda e: None,
+        )
+        page.dialog.open = True
+        page.update()
+
+    # Iniciar la conexión al servidor
+    connect_to_server()
+
     def list_in(e):
-        vinc_list(page, logged_in_user_id, users)  
+        vinc_list(page, logged_in_user_id, users)
         page.update()
 
     user_info = get_user_data(logged_in_user_id)
@@ -22,7 +102,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         )
 
     logo = ft.Image(
-        src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/3044f73c-0547-4b01-aeec-7ebff6555e1b/dj1p9o7-af65f7df-e4ef-497f-9cb7-b4545d76045e.png/v1/fill/w_400,h_400/logo_glind_by_coloringdancingedits_dj1p9o7-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NDAwIiwicGF0aCI6IlwvZlwvMzA0NGY3M2MtMDU0Ny00YjAxLWFlZWMtN2ViZmY2NTU1ZTFiXC9kajFwOW83LWFmNjVmN2RmLWU0ZWYtNDk3Zi05Y2I3LWI0NTQ1ZDc2MDQ1ZS5wbmciLCJ3aWR0aCI6Ijw9NDAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.e7HioozPY8w7uJYU9ucOlj32A2t67eokOm5vkh3go-A",
+        src="URL_DEL_LOGO",  # Reemplaza con la URL de tu logo
         fit=ft.ImageFit.COVER,
         width=100,
         height=120,
@@ -31,10 +111,10 @@ def home_view(page: ft.Page, logged_in_user_id: str):
     appbar = ft.AppBar(
         leading=ft.Container(content=logo),
         title=ft.Text("Glind", style=global_styles.global_text()),
-        bgcolor=ft.Colors.BLACK12,  # Usamos ft.Colors en lugar de ft.colors
+        bgcolor=ft.Colors.BLACK12,
         actions=[
             ft.IconButton(
-                icon=ft.Icons.SETTINGS,  # Usamos ft.Icons en lugar de ft.icons
+                icon=ft.Icons.SETTINGS,
                 on_click=lambda _: print("Abrir configuraciones...")
             )
         ],
@@ -42,7 +122,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
 
     nav = ft.Container(
         shape=ft.BoxShape.CIRCLE,
-        bgcolor=ft.Colors.BLACK,  
+        bgcolor=ft.Colors.BLACK,
         alignment=ft.alignment.center,
         padding=0,
         height=50,
@@ -50,14 +130,11 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_AROUND,
             controls=[
-                ft.IconButton(icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"),  # Usamos ft.Icons en lugar de ft.icons
-                ft.IconButton(
-                    icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"
-                ),  
+                ft.IconButton(icon=ft.Icons.HOME_FILLED, data="1", icon_color="white"),
                 ft.IconButton(
                     icon=ft.Icons.LIST_ALT_ROUNDED,
                     data="2",
-                    icon_color="white", 
+                    icon_color="white",
                     on_click=list_in,
                 ),
             ],
@@ -66,7 +143,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
 
     form_connect = ft.Column(
         controls=[user_name, user_code],
-        alignment=ft.CrossAxisAlignment.CENTER,
+        alignment=ft.MainAxisAlignment.CENTER,
         spacing=20,
     )
 
@@ -111,52 +188,52 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         except Exception as ex:
             print(f"Error en generate_and_show_qr: {ex}")
 
-
     def scan_and_connect(e):
         try:
             print("Botón 'Escanear QR y Conectar' presionado")
             qr_data = None
-    
+
             # Crear una imagen en la interfaz de Flet para mostrar el video
             video_image = ft.Image()
             page.overlay.append(video_image)
             page.update()
-    
+
             cap = cv2.VideoCapture(0)
             if not cap.isOpened():
                 print("No se pudo abrir la cámara")
                 page.dialog = ft.AlertDialog(
-                    title=ft.Text("Error"), content=ft.Text("No se pudo abrir la cámara.")
+                    title=ft.Text("Error"),
+                    content=ft.Text("No se pudo abrir la cámara.")
                 )
                 page.dialog.open = True
                 page.update()
                 return
-    
+
             while True:
                 ret, frame = cap.read()
                 if not ret:
                     print("No se pudo recibir el fotograma")
                     break
-                
+
                 # Convertir el fotograma a formato compatible con Flet
-                _, buffer = cv2.imencode(".jpg", frame)
+                _, buffer = cv2.imencode('.jpg', frame)
                 img_bytes = buffer.tobytes()
-                video_image.src_base64 = base64.b64encode(img_bytes).decode("utf-8")
+                video_image.src_base64 = base64.b64encode(img_bytes).decode('utf-8')
                 page.update()
-    
+
                 # Intentar decodificar códigos QR
                 decoded_objs = decode(frame)
                 if decoded_objs:
-                    qr_data = decoded_objs[0].data.decode("utf-8")
+                    qr_data = decoded_objs[0].data.decode('utf-8')
                     print("QR detectado:", qr_data)
                     break
-                
+
             # Liberar recursos y limpiar la interfaz
             cap.release()
             video_image.src_base64 = None
             page.overlay.remove(video_image)
             page.update()
-    
+
             if qr_data:
                 # Intentar cargar los datos del QR como un diccionario JSON
                 try:
@@ -166,43 +243,72 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                     if required_keys.issubset(connection_data.keys()):
                         target_user_id = connection_data["userId"]
                         linked_devices = users[logged_in_user_id].get("linked_devices", [])
-    
+
                         if target_user_id == logged_in_user_id:
                             page.dialog = ft.AlertDialog(
                                 title=ft.Text("Error"),
-                                content=ft.Text(
-                                    "No puedes vincular tu propio dispositivo."
-                                ),
+                                content=ft.Text("No puedes vincular tu propio dispositivo.")
                             )
                             page.dialog.open = True
                             page.update()
                         elif target_user_id in linked_devices:
                             page.dialog = ft.AlertDialog(
                                 title=ft.Text("Información"),
-                                content=ft.Text("Este dispositivo ya está vinculado."),
+                                content=ft.Text("Este dispositivo ya está vinculado.")
                             )
                             page.dialog.open = True
                             page.update()
                             print(f"El dispositivo {target_user_id} ya está vinculado.")
                         else:
-                            # Agregar el userId del dispositivo escaneado a la lista de dispositivos vinculados
-                            link_device(logged_in_user_id, target_user_id)
-                            print(
-                                f"Dispositivos vinculados: {logged_in_user_id} <--> {target_user_id}"
-                            )
-                            page.dialog = ft.AlertDialog(
-                                title=ft.Text("Éxito"),
-                                content=ft.Text("Dispositivo vinculado exitosamente."),
-                            )
-                            page.dialog.open = True
-                            page.update()
+                            # Conectarse al servidor y enviar solicitud de monitoreo
+                            server_ip = '127.0.0.1'  # Reemplaza con la IP del servidor
+                            server_port = 5051
+                            monitor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            monitor_socket.connect((server_ip, server_port))
+                            print(f"Conectado al servidor en {server_ip}:{server_port}")
+
+                            # Enviar el userId al servidor
+                            user_data = {
+                                "userId": logged_in_user_id,
+                                "deviceType": "monitor"  # Dispositivo monitor
+                            }
+                            monitor_socket.send(json.dumps(user_data).encode())
+
+                            # Enviar solicitud de monitoreo
+                            monitor_request = {
+                                "action": "monitor_request",
+                                "targetUserId": target_user_id,
+                                "requesterId": logged_in_user_id
+                            }
+                            monitor_socket.send(json.dumps(monitor_request).encode())
+
+                            # Esperar respuesta del servidor
+                            response_data = monitor_socket.recv(1024).decode()
+                            response = json.loads(response_data)
+                            if response.get("action") == "monitor_response":
+                                accepted = response.get("accepted")
+                                if accepted:
+                                    # Agregar el dispositivo a la lista vinculada
+                                    link_device(logged_in_user_id, target_user_id)
+                                    print(f"Dispositivos vinculados: {logged_in_user_id} <--> {target_user_id}")
+                                    page.dialog = ft.AlertDialog(
+                                        title=ft.Text("Éxito"),
+                                        content=ft.Text("El usuario ha aceptado el monitoreo. Dispositivo vinculado exitosamente.")
+                                    )
+                                else:
+                                    page.dialog = ft.AlertDialog(
+                                        title=ft.Text("Información"),
+                                        content=ft.Text("El usuario ha denegado el monitoreo.")
+                                    )
+                                page.dialog.open = True
+                                page.update()
+
+                            monitor_socket.close()
                     else:
                         print("El QR no contiene los datos necesarios.")
                         page.dialog = ft.AlertDialog(
                             title=ft.Text("Error"),
-                            content=ft.Text(
-                                "El código QR escaneado no es válido para este escaneo."
-                            ),
+                            content=ft.Text("El código QR escaneado no es válido para este escaneo.")
                         )
                         page.dialog.open = True
                         page.update()
@@ -210,16 +316,14 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                     print("El QR no es un JSON válido.")
                     page.dialog = ft.AlertDialog(
                         title=ft.Text("Error"),
-                        content=ft.Text(
-                            "El código QR escaneado no es válido para este escaneo."
-                        ),
+                        content=ft.Text("El código QR escaneado no es válido para este escaneo.")
                     )
                     page.dialog.open = True
                     page.update()
             else:
                 page.dialog = ft.AlertDialog(
                     title=ft.Text("Error"),
-                    content=ft.Text("No se pudo escanear el código QR."),
+                    content=ft.Text("No se pudo escanear el código QR.")
                 )
                 page.dialog.open = True
                 page.update()
