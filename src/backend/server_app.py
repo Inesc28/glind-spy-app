@@ -1,8 +1,10 @@
 import socket
 import threading
 import json
+import time
 
 users = {}  # Diccionario de usuarios conectados
+online_status = {}  # Diccionario para almacenar el estado en línea de los usuarios
 
 # Función para manejar la conexión de cada cliente
 def handle_client(conn, addr):
@@ -16,6 +18,7 @@ def handle_client(conn, addr):
 
             # Registrar la conexión del usuario
             users[user_id] = {"conn": conn, "deviceType": device_type, "addr": addr}
+            online_status[user_id] = True
             print(f"Usuario {user_id} conectado al servidor.")
 
             # Mantener la conexión abierta para recibir mensajes
@@ -23,7 +26,11 @@ def handle_client(conn, addr):
                 data = conn.recv(1024).decode()
                 if not data:
                     break
-                message = json.loads(data)
+                try:
+                    message = json.loads(data)
+                except json.JSONDecodeError as ex:
+                    print(f"Error decodificando mensaje JSON: {ex}")
+                    continue
 
                 if message.get("action") == "monitor_request":
                     target_user_id = message.get("targetUserId")
@@ -60,14 +67,37 @@ def handle_client(conn, addr):
                         }
                         requester_conn.send(json.dumps(response).encode())
 
+                elif message.get("action") == "heartbeat":
+                    # Actualizar el estado en línea del usuario
+                    online_status[user_id] = True
+
         # Eliminar al usuario de la lista al desconectarse
         print(f"Usuario {user_id} desconectado del servidor.")
-        del users[user_id]
+        if user_id in users:
+            del users[user_id]
+        if user_id in online_status:
+            del online_status[user_id]
 
     except Exception as ex:
         print(f"Error en handle_client: {ex}")
     finally:
         conn.close()
+
+
+# Función para verificar y actualizar el estado en línea de los usuarios
+def check_online_status():
+    while True:
+        time.sleep(10)  # Verificar cada 10 segundos
+        for user_id in list(online_status.keys()):
+            if online_status[user_id]:
+                online_status[user_id] = False  # Reiniciar el estado
+            else:
+                # Si el estado sigue siendo False, el usuario está desconectado
+                if user_id in users:
+                    print(f"Usuario {user_id} parece estar desconectado.")
+                    users[user_id]["conn"].close()
+                    del users[user_id]
+                    del online_status[user_id]
 
 
 # Función para iniciar el servidor socket
@@ -79,11 +109,13 @@ def start_server():
     server_socket.listen(5)
     print(f"Servidor iniciado en {ip_address}:{port}")
 
+    # Iniciar el hilo para verificar el estado en línea
+    threading.Thread(target=check_online_status, daemon=True).start()
+
     while True:
         conn, addr = server_socket.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-
 
 if __name__ == "__main__":
     start_server()

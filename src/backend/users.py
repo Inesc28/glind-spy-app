@@ -1,5 +1,8 @@
+import flet as ft
 import string
 import socket
+import threading
+import time
 import random
 import qrcode
 import json
@@ -102,3 +105,102 @@ def link_device(user_id, linked_user_id):
 
 def get_user_data(user_id):
     return {"id": user_id, "user": users[user_id]["user"]} if user_id in users else None
+
+
+def connect_to_server(logged_in_user_id, page):
+    try:
+        server_ip = "127.0.0.1"  # Reemplaza con la IP del servidor si es necesario
+        server_port = 5051  # Puerto del servidor
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((server_ip, server_port))
+        print(f"Conectado al servidor en {server_ip}:{server_port}")
+
+        # Enviar el user_id al servidor
+        user_data = {
+            "userId": logged_in_user_id,
+            "deviceType": "monitored",  # Tipo de dispositivo: monitoreado
+        }
+        client_socket.send(json.dumps(user_data).encode())
+
+        # Crear un hilo para manejar mensajes entrantes
+        threading.Thread(
+            target=handle_server_messages, args=(client_socket, page), daemon=True
+        ).start()
+
+        # Crear un hilo para enviar latidos periódicos
+        threading.Thread(
+            target=send_heartbeat, args=(client_socket,), daemon=True
+        ).start()
+
+    except Exception as ex:
+        print(f"Error al conectar al servidor: {ex}")
+
+
+def handle_server_messages(client_socket, page):
+    try:
+        while True:
+            data = client_socket.recv(1024).decode()
+            if not data:
+                break
+            message = json.loads(data)
+            if message.get("action") == "monitor_request":
+                requester_id = message.get("requesterId")
+                # Mostrar diálogo para aceptar o denegar el monitoreo
+                show_monitor_request_dialog(requester_id, client_socket, page)
+    except Exception as ex:
+        print(f"Error en handle_server_messages: {ex}")
+    finally:
+        client_socket.close()
+
+def send_heartbeat(client_socket):
+    try:
+        while True:
+            if client_socket:
+                heartbeat_message = {"action": "heartbeat"}
+                client_socket.send(json.dumps(heartbeat_message).encode())
+            time.sleep(5)  # Enviar un latido cada 5 segundos
+    except Exception as ex:
+        print(f"Error en send_heartbeat: {ex}")
+
+def show_monitor_request_dialog(requester_id, client_socket, page):
+    def accept_monitoring(e):
+        response = {
+            "action": "monitor_response",
+            "accepted": True,
+            "userId": page.session.get("logged_in_user_id"),
+        }
+        client_socket.send(json.dumps(response).encode())
+        page.dialog.open = False
+        page.update()
+
+    def deny_monitoring(e):
+        response = {
+            "action": "monitor_response",
+            "accepted": False,
+            "userId": page.session.get("logged_in_user_id"),
+        }
+        client_socket.send(json.dumps(response).encode())
+        page.dialog.open = False
+        page.update()
+
+    content = ft.Column(
+        [
+            ft.Text(f"El usuario {requester_id} quiere monitorear su dispositivo."),
+            ft.Row(
+                [
+                    ft.ElevatedButton("Aceptar", on_click=accept_monitoring),
+                    ft.ElevatedButton("Denegar", on_click=deny_monitoring),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+        ],
+        spacing=20,
+    )
+    page.dialog = ft.AlertDialog(
+        title=ft.Text("Solicitud de Monitoreo"),
+        content=content,
+        modal=True,
+        on_dismiss=lambda e: None,
+    )
+    page.dialog.open = True
+    page.update()
