@@ -1,14 +1,13 @@
 import flet as ft
 from assets.styles import global_styles
 from views.vinc_list import vinc_list
-from backend.users import connect_to_server, get_user_data, users
+from backend.users import connect_to_server_threaded, get_user_data, users
 from backend.qr_utils import generate_and_show_qr, scan_and_connect
-
 
 def home_view(page: ft.Page, logged_in_user_id: str):
 
-    # Iniciar la conexión al servidor
-    connect_to_server(logged_in_user_id, page)
+    # Iniciar la conexión al servidor en un hilo separado
+    connect_to_server_threaded(logged_in_user_id, page)
 
     def list_in(e):
         vinc_list(page, logged_in_user_id, users)
