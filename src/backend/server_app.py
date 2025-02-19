@@ -3,8 +3,8 @@ import threading
 import json
 import time
 
-users = {}  # Diccionario de usuarios conectados
-online_status = {}  # Diccionario para almacenar el estado en línea de los usuarios
+users = {}
+online_status = {} 
 
 # Función para manejar la conexión de cada cliente
 def handle_client(conn, addr):

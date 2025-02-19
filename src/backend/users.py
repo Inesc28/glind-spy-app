@@ -1,8 +1,6 @@
-import flet as ft
 import string
 import socket
 import threading
-import time
 import random
 import qrcode
 import json
@@ -127,14 +125,8 @@ def connect_to_server(logged_in_user_id, page):
             target=handle_server_messages, args=(client_socket, page), daemon=True
         ).start()
 
-        # Crear un hilo para enviar latidos periódicos
-        threading.Thread(
-            target=send_heartbeat, args=(client_socket,), daemon=True
-        ).start()
-
     except Exception as ex:
         print(f"Error al conectar al servidor: {ex}")
-
 
 def handle_server_messages(client_socket, page):
     try:
@@ -145,62 +137,8 @@ def handle_server_messages(client_socket, page):
             message = json.loads(data)
             if message.get("action") == "monitor_request":
                 requester_id = message.get("requesterId")
-                # Mostrar diálogo para aceptar o denegar el monitoreo
-                show_monitor_request_dialog(requester_id, client_socket, page)
+                print(f"Solicitud de monitoreo recibida de {requester_id}.")
     except Exception as ex:
         print(f"Error en handle_server_messages: {ex}")
     finally:
         client_socket.close()
-
-def send_heartbeat(client_socket):
-    try:
-        while True:
-            if client_socket:
-                heartbeat_message = {"action": "heartbeat"}
-                client_socket.send(json.dumps(heartbeat_message).encode())
-            time.sleep(5)  # Enviar un latido cada 5 segundos
-    except Exception as ex:
-        print(f"Error en send_heartbeat: {ex}")
-
-def show_monitor_request_dialog(requester_id, client_socket, page):
-    def accept_monitoring(e):
-        response = {
-            "action": "monitor_response",
-            "accepted": True,
-            "userId": page.session.get("logged_in_user_id"),
-        }
-        client_socket.send(json.dumps(response).encode())
-        page.dialog.open = False
-        page.update()
-
-    def deny_monitoring(e):
-        response = {
-            "action": "monitor_response",
-            "accepted": False,
-            "userId": page.session.get("logged_in_user_id"),
-        }
-        client_socket.send(json.dumps(response).encode())
-        page.dialog.open = False
-        page.update()
-
-    content = ft.Column(
-        [
-            ft.Text(f"El usuario {requester_id} quiere monitorear su dispositivo."),
-            ft.Row(
-                [
-                    ft.ElevatedButton("Aceptar", on_click=accept_monitoring),
-                    ft.ElevatedButton("Denegar", on_click=deny_monitoring),
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-        ],
-        spacing=20,
-    )
-    page.dialog = ft.AlertDialog(
-        title=ft.Text("Solicitud de Monitoreo"),
-        content=content,
-        modal=True,
-        on_dismiss=lambda e: None,
-    )
-    page.dialog.open = True
-    page.update()
