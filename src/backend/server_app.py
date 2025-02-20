@@ -1,4 +1,3 @@
-# server_app.py
 import socket
 import threading
 import json
@@ -18,23 +17,39 @@ def handle_client(conn, addr):
             users[user_id] = {"conn": conn, "addr": addr, "username": username}
             print(f"Usuario {user_id} ({username}) conectado al servidor.")
 
+            # Establecer tiempo de espera para detectar desconexiones
+            conn.settimeout(1.0)
+
             while True:
-                data = conn.recv(1024).decode()
-                if not data:
+                try:
+                    data = conn.recv(1024).decode()
+                    if not data:
+                        break
+                    request = json.loads(data)
+                    action = request.get("action")
+                    if action == "get_connected_users":
+                        # Enviar la lista de usuarios conectados
+                        connected_users = [
+                            {"userId": uid, "username": udata["username"]}
+                            for uid, udata in users.items()
+                        ]
+                        response = {
+                            "action": "connected_users",
+                            "users": connected_users,
+                        }
+                        conn.send(json.dumps(response).encode())
+                    else:
+                        # Manejar otras acciones si es necesario
+                        pass
+                except socket.timeout:
+                    # Si ocurre un timeout, continuamos para verificar la conexión
+                    continue
+                except ConnectionResetError:
+                    # El cliente cerró la conexión abruptamente
                     break
-                request = json.loads(data)
-                action = request.get("action")
-                if action == "get_connected_users":
-                    # Enviar la lista de usuarios conectados
-                    connected_users = [
-                        {"userId": uid, "username": udata["username"]}
-                        for uid, udata in users.items()
-                    ]
-                    response = {"action": "connected_users", "users": connected_users}
-                    conn.send(json.dumps(response).encode())
-                else:
-                    # Manejar otras acciones si es necesario
-                    pass
+                except Exception as ex:
+                    print(f"Error al recibir datos del cliente {user_id}: {ex}")
+                    break
 
         # Eliminar al usuario de la lista al desconectarse
         print(f"Usuario {user_id} desconectado del servidor.")

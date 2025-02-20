@@ -96,6 +96,23 @@ def connect_to_server(logged_in_user_id, _):
     except Exception as ex:
         print(f"Error al conectar al servidor: {ex}")
 
+
+def disconnect_from_server(logged_in_user_id):
+    try:
+        client_socket = client_sockets.get(logged_in_user_id)
+        if client_socket:
+            # Enviar una señal de desconexión al servidor (opcional)
+            # request = {"action": "disconnect"}
+            # client_socket.send(json.dumps(request).encode())
+            client_socket.close()
+            del client_sockets[logged_in_user_id]
+            print(f"Desconectado del servidor.")
+        else:
+            print("No hay conexión al servidor para desconectar.")
+    except Exception as ex:
+        print(f"Error al desconectar del servidor: {ex}")
+
+
 def connect_to_server_threaded(logged_in_user_id, page):
     threading.Thread(target=connect_to_server, args=(logged_in_user_id, page)).start()
 
