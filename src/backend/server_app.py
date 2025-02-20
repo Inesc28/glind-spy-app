@@ -1,10 +1,10 @@
+# server_app.py
 import socket
 import threading
 import json
 
 users = {}
 
-# Función para manejar la conexión de cada cliente
 def handle_client(conn, addr):
     try:
         print(f"Conexión establecida desde {addr}")
@@ -12,15 +12,29 @@ def handle_client(conn, addr):
         if data:
             user_data = json.loads(data)
             user_id = user_data["userId"]
+            username = user_data.get("username", "Desconocido")
 
             # Registrar la conexión del usuario
-            users[user_id] = {"conn": conn, "addr": addr}
-            print(f"Usuario {user_id} conectado al servidor.")
+            users[user_id] = {"conn": conn, "addr": addr, "username": username}
+            print(f"Usuario {user_id} ({username}) conectado al servidor.")
 
             while True:
-                data = conn.recv(1024)
+                data = conn.recv(1024).decode()
                 if not data:
                     break
+                request = json.loads(data)
+                action = request.get("action")
+                if action == "get_connected_users":
+                    # Enviar la lista de usuarios conectados
+                    connected_users = [
+                        {"userId": uid, "username": udata["username"]}
+                        for uid, udata in users.items()
+                    ]
+                    response = {"action": "connected_users", "users": connected_users}
+                    conn.send(json.dumps(response).encode())
+                else:
+                    # Manejar otras acciones si es necesario
+                    pass
 
         # Eliminar al usuario de la lista al desconectarse
         print(f"Usuario {user_id} desconectado del servidor.")
@@ -33,7 +47,6 @@ def handle_client(conn, addr):
         conn.close()
 
 
-# Función para iniciar el servidor socket
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ip_address = "0.0.0.0"

@@ -18,11 +18,11 @@ def login_view(page: ft.Page):
     page.vertical_alignment = page.horizontal_alignment = "center"
 
     title = ft.Text("Iniciar Sesión", style=global_styles.global_text())
-    user = ft.TextField(
+    username_field = ft.TextField(
         label="Username", multiline=False, border_color="pink", border_radius=15
     )
 
-    password = ft.TextField(
+    password_field = ft.TextField(
         label="Password",
         password=True,
         can_reveal_password=True,
@@ -37,23 +37,27 @@ def login_view(page: ft.Page):
     )
 
     login_main = ft.Column(
-        controls=[title, user, password, save_button],
+        controls=[title, username_field, password_field, save_button],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20,
     )
 
-    page.add(ft.Container(content=login_main, padding=0, margin=0, expand=False))
-
     def credentials_access(e):
-        if validate_user(user.value, password.value):
-            handle_login(page)
+        user_id = validate_user(username_field.value, password_field.value)
+        if user_id:
+            handle_login(page, user_id)
         else:
-            ft.AlertDialog(title=ft.Text("Ha ocurrido un error"))
+            page.dialog = ft.AlertDialog(
+                title=ft.Text("Error"),
+                content=ft.Text("Usuario o contraseña incorrectos."),
+            )
+            page.dialog.open = True
+            page.update()
 
-
-    def handle_login(page: ft.Page):
-        user_id = validate_user(user.value, password.value)
+    def handle_login(page: ft.Page, user_id):
         page.clean()
-        home_view(page, user_id)  
+        home_view(page, user_id)
         page.update()
+
+    page.add(ft.Container(content=login_main, padding=0, margin=0, expand=False))
