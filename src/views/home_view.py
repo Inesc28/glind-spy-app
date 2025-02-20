@@ -1,17 +1,12 @@
 import flet as ft
 from assets.styles import global_styles
-from views.vinc_list import vinc_list
 from backend.users import connect_to_server_threaded, get_user_data, users
-from backend.qr_utils import generate_and_show_qr, scan_and_connect
+
 
 def home_view(page: ft.Page, logged_in_user_id: str):
 
     # Iniciar la conexión al servidor en un hilo separado
     connect_to_server_threaded(logged_in_user_id, page)
-
-    def list_in(e):
-        vinc_list(page, logged_in_user_id, users)
-        page.update()
 
     user_info = get_user_data(logged_in_user_id)
 
@@ -55,7 +50,8 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                     icon=ft.Icons.LIST_ALT_ROUNDED,
                     data="2",
                     icon_color="white",
-                    on_click=list_in,
+                    on_click=None,  # Botón deshabilitado
+                    disabled=True,  # Añadir propiedad disabled
                 ),
             ],
         ),
@@ -66,21 +62,6 @@ def home_view(page: ft.Page, logged_in_user_id: str):
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=20,
     )
-
-    generate_qr_button = ft.ElevatedButton(
-        text="Generar y Mostrar QR",
-        on_click=lambda e: generate_and_show_qr(
-            e, page, logged_in_user_id, form_connect
-        ),
-    )
-
-    link_device_button = ft.ElevatedButton(
-        text="Escanear QR y Conectar",
-        on_click=lambda e: scan_and_connect(e, page, logged_in_user_id),
-    )
-
-    form_connect.controls.append(generate_qr_button)
-    form_connect.controls.append(link_device_button)
 
     page.add(appbar)
     page.add(ft.Container(content=form_connect, padding=0, margin=0, expand=False))
