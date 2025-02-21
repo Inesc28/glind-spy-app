@@ -2,7 +2,6 @@ import flet as ft
 from assets.styles import global_styles
 from backend.users import connect_to_server_threaded, get_user_data, get_connected_users
 
-
 def home_view(page: ft.Page, logged_in_user_id: str):
 
     # Iniciar la conexión al servidor en un hilo separado
@@ -70,12 +69,6 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                     trailing=ft.PopupMenuButton(
                         items=[
                             ft.PopupMenuItem(
-                                text="Desvincular",
-                                on_click=lambda e, user_id=user_id: desvincular(
-                                    e, user_id
-                                ),
-                            ),
-                            ft.PopupMenuItem(
                                 text="Visualizar pantalla",
                                 on_click=lambda e, user_id=user_id: visualizar(
                                     e, user_id
@@ -86,11 +79,7 @@ def home_view(page: ft.Page, logged_in_user_id: str):
                 )
                 items.append(item)
 
-        # Funciones para desvincular y visualizar usuarios
-        def desvincular(e, user_id):
-            print(f"Usuario {user_id} desvinculado.")
-            # Aquí puedes agregar la lógica para desvincular al usuario
-
+        # Función para visualizar usuarios
         def visualizar(e, user_id):
             print(f"Visualizando pantalla del usuario {user_id}.")
             # Aquí puedes agregar la lógica para visualizar la pantalla del usuario
